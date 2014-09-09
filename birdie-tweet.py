@@ -16,6 +16,7 @@
 from twython import Twython
 from subprocess import call
 import time
+from time import strftime, gmtime
 import random
 import RPi.GPIO as GPIO
 
@@ -25,12 +26,16 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(04, GPIO.IN)   # GPIO4 is pin 7
 
 # Twitter Token
-APP_KEY = '<insert_app_key>'
-APP_SECRET = '<insert_app_secret>'
-ACCESS_TOKEN = '<insert_access_token>'
-ACCESS_TOKEN_SECRET = '<insert_access_token_secret>'
+APP_KEY = ''
+APP_SECRET = ''
+ACCESS_TOKEN = ''
+ACCESS_TOKEN_SECRET = ''
 
 SLEEP_DURATION = 30
+
+# local time when the sun sets 20 = 8 PM
+SUNSET = 20
+SUNRISE = 6
 
 messages = []
 messages.append("The early bird gets the fresh seeds. #birds #birdwatching")
@@ -53,12 +58,35 @@ messages.append("Some birds aren't meant to be caged. Their feathers are just to
 messages.append("You're so vain, you probably think this selfie is about you. #birdwatching #birds")
 messages.append("In order to see birds it is necessary to become a part of the silence. -Robert Lynd #birdwatching #birds")
 messages.append("He imagines a necessary joy in things that must fly to eat. -Wendell Berry #birds #birdwatching #bird")
+messages.append("A crab does not beget a bird. #nature #birdwatching #photography")
+messages.append("No need to teach an eagle to fly. #nature #photography #birdwatching")
+messages.append("A bird does not sing because it has an answer. It sings because it has a song. #birdwatching #nature #photography")
+messages.append("People live like birds in the woods: When the time comes, each must take flight. #birdwatching")
+messages.append("Listen to all, plucking a feather from every passing goose, but, follow no one absolutely. #birdwatching")
+messages.append("You cannot prevent the birds of sorrow from flying over your head, but you can prevent them from building nests in your hair.")
+messages.append("A chattering bird builds no nest. #nature #photography #birdwatching")
+messages.append("Two birds disputed about a kernel, when a third swooped down and carried it off. #nature #photography #birdwatching")
+messages.append("Each bird loves to hear himself sing. #birdwatching #photography")
+messages.append("A bird does not change its feathers because the weather is bad. #birdwatching #nature #photography")
+messages.append("This bird is naked as a jaybird. #photography")
+messages.append("One swallow does not make a summer. #nature #birdwatching #photography")
+messages.append("Keep a green tree in your heart and perhaps a singing bird will come. -Chinese Proverb #birdwatching")
+messages.append("Your head is a living forest full of song birds. -E. E. Cummings #birdwatching")
+
 
 
 
 # wait for proximity sensor 
 while True:
-	if (GPIO.input(04)):
+
+	# Check current local time
+	utc_hour = int(strftime("%H", gmtime()))
+    	hour = utc_hour - 6
+    	if (hour < 0):
+        	hour = hour + 24
+
+	# if motion and if the sun hasn't set
+	if (GPIO.input(04) and hour < SUNSET and hour > SUNRISE):
 		try:
 			# Take a picture
 			call("/opt/vc/bin/raspistill -e jpg --vflip -w 320 -h 320 -q 100 -o /tmp/snapshot.jpg", shell=True)
